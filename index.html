@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>ระบบงานออนไลน์ วษท.สุรินทร์</title>
-  <meta name="description" content="ศูนย์รวมระบบงานออนไลน์ วิทยาลัยสารพัดช่างสุรินทร์">
+  <title>ระบบงานพัสดุ วิทยาลัยสารพัดช่างสุรินทร์</title>
+  <meta name="description" content="ศูนย์รวมระบบงานพัสดุ วิทยาลัยสารพัดช่างสุรินทร์">
   <meta name="theme-color" content="#1b5f58">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" href="icon-192.png">
@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ระบบงาน วษท.">
+  <meta name="apple-mobile-web-app-title" content="งานพัสดุ วษท.">
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 
   <script>
@@ -32,6 +32,16 @@
         color: '#25786e',
         owner: 'งานพัสดุ',
         url: 'https://script.google.com/macros/s/AKfycbwPizPt6xpCUenFXVkoE63EBmCdJZBQ_Cqo4jMTuLu6L0FA8K1bVfxKSU9N5Rx2qxeJkw/exec'
+      },
+      {
+        id: 'supply',
+        name: 'ระบบงานพัสดุ',
+        desc: 'ระบบงานพัสดุ ฝ่ายบริหารทรัพยากร',
+        icon: '📦',
+        color: '#5b7fb5',
+        owner: 'งานพัสดุ',
+        url: 'https://script.google.com/macros/s/AKfycbxkJuf4FAWU0yzLAUaux9VpbHj3uxqO1288UISUVOkHBP1WYkpOUJa-0FD8h7BMkiTr-Q/exec'
+        // ถ้าระบบนี้ฝังในหน้ารวมไม่ได้ ให้เพิ่มบรรทัด  , newTab: true  เพื่อเปิดเป็นแท็บใหม่แทน
       }
       // ตัวอย่างการเพิ่มระบบใหม่ (ลบ // หน้าบรรทัดออก แล้วแก้ข้อมูล):
       // ,{
@@ -45,8 +55,9 @@
       // }
     ];
     window.PORTAL_ORG = {
-      title: 'ระบบงานออนไลน์',
-      subtitle: 'วิทยาลัยสารพัดช่างสุรินทร์'
+      title: 'ระบบงานพัสดุ',
+      subtitle: 'วิทยาลัยสารพัดช่างสุรินทร์',
+      footer: 'งานพัสดุ ฝ่ายบริหารทรัพยากร วิทยาลัยสารพัดช่างสุรินทร์'
     };
   </script>
 
@@ -167,7 +178,7 @@
   <div class="home" id="home">
     <header class="hero">
       <div class="hero-inner">
-        <div class="logo" aria-hidden="true">🏫</div>
+        <div class="logo" aria-hidden="true">📦</div>
         <div>
           <h1 id="orgTitle"></h1>
           <p id="orgSub"></p>
@@ -235,7 +246,7 @@
 
       $('orgTitle').textContent = window.PORTAL_ORG.title;
       $('orgSub').textContent = window.PORTAL_ORG.subtitle;
-      $('footer').textContent = window.PORTAL_ORG.subtitle + ' · ' + apps.length + ' ระบบ';
+      $('footer').textContent = window.PORTAL_ORG.footer || window.PORTAL_ORG.subtitle;
 
       $('appGrid').innerHTML = apps.map(function (a) {
         return '<button class="app-card" type="button" data-app="' + esc(a.id) + '">' +
@@ -247,7 +258,12 @@
       }).join('');
 
       document.querySelectorAll('[data-app]').forEach(function (el) {
-        el.addEventListener('click', function () { cameFromHome = true; location.hash = '#/' + el.getAttribute('data-app'); });
+        el.addEventListener('click', function () {
+          var app = apps.filter(function (a) { return a.id === el.getAttribute('data-app'); })[0];
+          if (app && app.newTab) { window.open(app.url, '_blank', 'noopener'); return; }
+          cameFromHome = true;
+          location.hash = '#/' + el.getAttribute('data-app');
+        });
       });
 
       // ---------- เปิด / ปิดระบบตามลิงก์ #/id ----------
