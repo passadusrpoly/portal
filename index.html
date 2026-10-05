@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ระบบงานออนไลน์ วษท.สุรินทร์</title>
+  <meta name="description" content="ศูนย์รวมระบบงานออนไลน์ วิทยาลัยสารพัดช่างสุรินทร์">
+  <meta name="theme-color" content="#1b5f58">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ระบบงาน วษท.">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    /* =====================================================================
+       รายการระบบในหน้ารวม — เพิ่มระบบใหม่ได้โดยเพิ่ม 1 บล็อกในรายการนี้
+       id    : ชื่อสั้นภาษาอังกฤษ ใช้ทำลิงก์ตรง เช่น .../#/car
+       url   : ลิงก์ Web app ที่ลงท้ายด้วย /exec (ระบบจะตัด /u/ตัวเลข/ ออกให้เอง)
+       icon  : อีโมจิ 1 ตัว
+       color : สีของไอคอน
+       ===================================================================== */
+    window.PORTAL_APPS = [
+      {
+        id: 'car',
+        name: 'ระบบจองรถยนต์ราชการ',
+        desc: 'ตรวจสถานะรถ จองรถ ดูปฏิทิน และพิมพ์ใบขออนุญาต',
+        icon: '🚐',
+        color: '#25786e',
+        owner: 'งานพัสดุ',
+        url: 'https://script.google.com/macros/s/AKfycbwPizPt6xpCUenFXVkoE63EBmCdJZBQ_Cqo4jMTuLu6L0FA8K1bVfxKSU9N5Rx2qxeJkw/exec'
+      }
+      // ตัวอย่างการเพิ่มระบบใหม่ (ลบ // หน้าบรรทัดออก แล้วแก้ข้อมูล):
+      // ,{
+      //   id: 'repair',
+      //   name: 'ระบบแจ้งซ่อม',
+      //   desc: 'แจ้งซ่อมอาคารและครุภัณฑ์',
+      //   icon: '🛠️',
+      //   color: '#c4783a',
+      //   owner: 'งานอาคารสถานที่',
+      //   url: 'https://script.google.com/macros/s/xxxxxxxx/exec'
+      // }
+    ];
+    window.PORTAL_ORG = {
+      title: 'ระบบงานออนไลน์',
+      subtitle: 'วิทยาลัยสารพัดช่างสุรินทร์'
+    };
+  </script>
+
+  <style>
+    :root {
+      --bg: #f3f6f5; --surface: #ffffff; --surface-2: #f6f9f8; --text: #25353a; --muted: #66777b; --border: #dfe7e5;
+      --primary: #25786e; --primary-soft: #e3f2ef; --hd-from: #1b5f58; --hd-to: #2a847a;
+      --shadow: 0 6px 24px rgba(30, 70, 64, .08); --bar-h: 52px;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1718; --surface: #172224; --surface-2: #1d2b2d; --text: #e4eeec; --muted: #9db0b2; --border: #2a3b3d;
+        --primary: #5ec2b5; --primary-soft: #1d3a38; --hd-from: #14302d; --hd-to: #1f4a45; --shadow: 0 6px 24px rgba(0, 0, 0, .35);
+        color-scheme: dark;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; }
+    a { color: var(--primary); }
+
+    /* ---------- Home ---------- */
+    .home { min-height: 100%; display: flex; flex-direction: column; }
+    .hero {
+      position: relative; overflow: hidden; color: #fff;
+      background: linear-gradient(135deg, var(--hd-from), var(--hd-to));
+      padding: calc(28px + env(safe-area-inset-top)) 20px 64px; border-radius: 0 0 28px 28px;
+    }
+    .hero::before, .hero::after { content: ""; position: absolute; border-radius: 50%; background: rgba(255,255,255,.07); }
+    .hero::before { width: 260px; height: 260px; right: -70px; top: -110px; }
+    .hero::after { width: 170px; height: 170px; left: -60px; bottom: -90px; }
+    .hero-inner { position: relative; max-width: 960px; margin: 0 auto; display: flex; gap: 14px; align-items: center; }
+    .logo {
+      width: 54px; height: 54px; border-radius: 16px; flex-shrink: 0; display: grid; place-items: center;
+      background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); font-size: 1.6rem;
+    }
+    .hero h1 { margin: 0; font-size: 1.5rem; line-height: 1.25; }
+    .hero p { margin: 2px 0 0; opacity: .85; }
+
+    .content { width: 100%; max-width: 960px; margin: -40px auto 0; padding: 0 16px 32px; position: relative; flex: 1; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+    .app-card {
+      display: flex; gap: 14px; align-items: flex-start; text-align: left; width: 100%;
+      background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 18px;
+      padding: 16px; box-shadow: var(--shadow); cursor: pointer; transition: transform .15s ease, border-color .15s ease;
+    }
+    .app-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+    .app-card:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+    .app-icon {
+      --c: var(--primary); width: 52px; height: 52px; border-radius: 15px; flex-shrink: 0;
+      display: grid; place-items: center; font-size: 1.6rem;
+      background: color-mix(in srgb, var(--c) 16%, var(--surface));
+    }
+    .app-name { font-weight: 700; font-size: 1.05rem; line-height: 1.3; }
+    .app-desc { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+    .app-owner { display: inline-block; margin-top: 8px; font-size: .75rem; color: var(--primary); background: var(--primary-soft); padding: 2px 9px; border-radius: 20px; font-weight: 600; }
+
+    .tips { margin-top: 22px; display: grid; gap: 10px; }
+    .tip {
+      display: flex; gap: 10px; align-items: flex-start; font-size: .9rem; color: var(--muted);
+      background: var(--surface); border: 1px dashed var(--border); border-radius: 14px; padding: 12px 14px;
+    }
+    .tip b { color: var(--text); }
+    .install-btn {
+      display: none; border: 0; border-radius: 10px; padding: 7px 14px; margin-top: 8px;
+      background: var(--primary); color: #fff; font-weight: 600; cursor: pointer;
+    }
+    @media (prefers-color-scheme: dark) { .install-btn { color: #0b1f1d; } }
+    footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 0 16px calc(18px + env(safe-area-inset-bottom)); }
+
+    /* ---------- App view ---------- */
+    .viewer { position: fixed; inset: 0; display: none; flex-direction: column; background: var(--bg); }
+    .viewer.open { display: flex; }
+    .bar {
+      height: calc(var(--bar-h) + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 8px 0;
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--hd-from), var(--hd-to)); color: #fff;
+    }
+    .bar-title { flex: 1; min-width: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-btn {
+      height: 38px; min-width: 38px; padding: 0 10px; border-radius: 11px; border: 1px solid rgba(255,255,255,.28);
+      background: rgba(255,255,255,.12); color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      font-size: .9rem; font-weight: 600; text-decoration: none; white-space: nowrap;
+    }
+    .bar-btn:hover { background: rgba(255,255,255,.24); }
+    .bar-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .frame-wrap { position: relative; flex: 1; min-height: 0; }
+    .frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg); }
+    .loading {
+      position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+      background: var(--bg); color: var(--muted); text-align: center; padding: 20px; transition: opacity .25s ease;
+    }
+    .loading.hidden { opacity: 0; pointer-events: none; }
+    .spinner { width: 38px; height: 38px; border-radius: 50%; border: 4px solid var(--primary-soft); border-top-color: var(--primary); animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .slow { display: none; max-width: 340px; font-size: .9rem; }
+    .slow.show { display: block; }
+    .slow a { font-weight: 600; }
+
+    @media (max-width: 600px) {
+      .hero { padding-bottom: 56px; }
+      .hero h1 { font-size: 1.2rem; }
+      .hero p { font-size: .85rem; }
+      .logo { width: 46px; height: 46px; font-size: 1.35rem; border-radius: 14px; }
+      .bar-btn .lbl { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== HOME ===================== -->
+  <div class="home" id="home">
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="logo" aria-hidden="true">🏫</div>
+        <div>
+          <h1 id="orgTitle"></h1>
+          <p id="orgSub"></p>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="grid" id="appGrid"></div>
+
+      <div class="tips">
+        <div class="tip" id="installTip">
+          <span aria-hidden="true">📱</span>
+          <div>
+            <b>ติดตั้งไว้บนหน้าจอมือถือ</b> เปิดได้เหมือนแอป ไม่ต้องจำลิงก์<br>
+            <span id="installHow">Android (Chrome): เมนู ⋮ → เพิ่มลงในหน้าจอหลัก · iPhone (Safari): ปุ่มแชร์ → เพิ่มไปยังหน้าจอโฮม</span><br>
+            <button class="install-btn" id="installBtn" type="button">ติดตั้งเลย</button>
+          </div>
+        </div>
+        <div class="tip">
+          <span aria-hidden="true">💡</span>
+          <div>เปิดจาก LINE แล้วใช้งานไม่ได้? กดเมนู ⋮ หรือ ··· มุมขวาบน แล้วเลือก <b>เปิดในเบราว์เซอร์</b></div>
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer"></footer>
+  </div>
+
+  <!-- ===================== APP VIEWER ===================== -->
+  <div class="viewer" id="viewer" aria-hidden="true">
+    <div class="bar">
+      <button class="bar-btn" type="button" id="btnHome" aria-label="กลับหน้ารวมระบบ">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg><span class="lbl">หน้ารวม</span>
+      </button>
+      <div class="bar-title" id="barTitle"></div>
+      <button class="bar-btn" type="button" id="btnReload" aria-label="โหลดใหม่" title="โหลดใหม่">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+      </button>
+      <a class="bar-btn" id="btnExternal" target="_blank" rel="noopener" aria-label="เปิดในแท็บใหม่" title="เปิดในแท็บใหม่">
+        <svg viewBox="0 0 24 24"><path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg><span class="lbl">แท็บใหม่</span>
+      </a>
+    </div>
+    <div class="frame-wrap">
+      <iframe id="appFrame" title="ระบบงาน" allow="clipboard-write; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div class="loading" id="loading">
+        <div class="spinner" aria-hidden="true"></div>
+        <div>กำลังเปิดระบบ...</div>
+        <div class="slow" id="slowMsg">ใช้เวลานานกว่าปกติ ถ้าหน้าไม่ขึ้น ลอง <a id="slowLink" target="_blank" rel="noopener">เปิดในแท็บใหม่</a></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+      var apps = (window.PORTAL_APPS || []).map(function (a) {
+        // ตัด /u/ตัวเลข/ ออก กันปัญหาล็อกอินหลายบัญชี
+        return Object.assign({}, a, { url: String(a.url || '').replace(/\/macros\/u\/\d+\//, '/macros/').replace(/\/u\/\d+\//, '/') });
+      });
+      var $ = function (id) { return document.getElementById(id); };
+      var esc = function (s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+      };
+
+      $('orgTitle').textContent = window.PORTAL_ORG.title;
+      $('orgSub').textContent = window.PORTAL_ORG.subtitle;
+      $('footer').textContent = window.PORTAL_ORG.subtitle + ' · ' + apps.length + ' ระบบ';
+
+      $('appGrid').innerHTML = apps.map(function (a) {
+        return '<button class="app-card" type="button" data-app="' + esc(a.id) + '">' +
+          '<span class="app-icon" style="--c:' + esc(a.color || '#25786e') + '" aria-hidden="true">' + esc(a.icon || '📄') + '</span>' +
+          '<span><span class="app-name">' + esc(a.name) + '</span>' +
+          (a.desc ? '<span class="app-desc" style="display:block">' + esc(a.desc) + '</span>' : '') +
+          (a.owner ? '<span class="app-owner">' + esc(a.owner) + '</span>' : '') +
+          '</span></button>';
+      }).join('');
+
+      document.querySelectorAll('[data-app]').forEach(function (el) {
+        el.addEventListener('click', function () { cameFromHome = true; location.hash = '#/' + el.getAttribute('data-app'); });
+      });
+
+      // ---------- เปิด / ปิดระบบตามลิงก์ #/id ----------
+      var cameFromHome = false;
+      var frame = $('appFrame'), loading = $('loading'), slow = $('slowMsg'), slowTimer = null, currentId = null;
+
+      function openApp(app) {
+        document.title = app.name + ' · ' + window.PORTAL_ORG.title;
+        $('barTitle').textContent = app.name;
+        $('btnExternal').href = app.url;
+        $('slowLink').href = app.url;
+        $('home').style.display = 'none';
+        $('viewer').classList.add('open');
+        $('viewer').setAttribute('aria-hidden', 'false');
+        if (currentId !== app.id) {
+          currentId = app.id;
+          loadFrame(app.url);
+        }
+      }
+
+      function closeApp() {
+        document.title = window.PORTAL_ORG.title + ' · ' + window.PORTAL_ORG.subtitle;
+        $('viewer').classList.remove('open');
+        $('viewer').setAttribute('aria-hidden', 'true');
+        $('home').style.display = '';
+      }
+
+      function showLoading() {
+        loading.classList.remove('hidden');
+        slow.classList.remove('show');
+        clearTimeout(slowTimer);
+        slowTimer = setTimeout(function () { slow.classList.add('show'); }, 12000);
+      }
+
+      // สร้าง iframe ใหม่ทุกครั้งที่โหลด เพื่อไม่ให้เพิ่มประวัติในปุ่มย้อนกลับของเบราว์เซอร์
+      function loadFrame(url) {
+        showLoading();
+        var fresh = frame.cloneNode(false);
+        fresh.removeAttribute('src');
+        fresh.addEventListener('load', function () {
+          if (!fresh.getAttribute('src')) return;
+          clearTimeout(slowTimer);
+          loading.classList.add('hidden');
+        });
+        fresh.setAttribute('src', url);
+        frame.parentNode.replaceChild(fresh, frame);
+        frame = fresh;
+      }
+
+      function route() {
+        var m = /^#\/([\w-]+)/.exec(location.hash);
+        var app = m && apps.filter(function (a) { return a.id === m[1]; })[0];
+        if (app) openApp(app); else closeApp();
+      }
+      window.addEventListener('hashchange', route);
+
+      $('btnHome').addEventListener('click', function () {
+        if (cameFromHome) { cameFromHome = false; history.back(); }
+        else location.hash = '';
+      });
+      $('btnReload').addEventListener('click', function () {
+        var app = apps.filter(function (a) { return a.id === currentId; })[0];
+        if (!app) return;
+        loadFrame(app.url);
+      });
+
+      // มีระบบเดียว ไม่ต้องเปิดอัตโนมัติ ให้ผู้ใช้เลือกจากหน้ารวม
+      route();
+
+      // ---------- ปุ่มติดตั้งแอป (Android / Chrome) ----------
+      var deferred = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferred = e;
+        $('installBtn').style.display = 'inline-block';
+      });
+      $('installBtn').addEventListener('click', function () {
+        if (!deferred) return;
+        deferred.prompt();
+        deferred.userChoice.finally(function () { deferred = null; $('installBtn').style.display = 'none'; });
+      });
+      var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      if (standalone) $('installTip').style.display = 'none';
+    })();
+  </script>
+</body>
+</html>
