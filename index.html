@@ -281,17 +281,19 @@
       var cameFromHome = false;
       var frame = $('appFrame'), loading = $('loading'), slow = $('slowMsg'), slowTimer = null, currentId = null;
 
-      function openApp(app) {
+      function openApp(app, admin) {
+        var url = app.url + (admin ? '#admin' : '');
         document.title = app.name + ' · ' + HOME_TITLE;
         $('barTitle').textContent = app.name;
-        $('btnExternal').href = app.url;
-        $('slowLink').href = app.url;
+        $('btnExternal').href = url;
+        $('slowLink').href = url;
         $('home').style.display = 'none';
         $('viewer').classList.add('open');
         $('viewer').setAttribute('aria-hidden', 'false');
-        if (currentId !== app.id) {
-          currentId = app.id;
-          loadFrame(app.url);
+        var key = app.id + (admin ? '/admin' : '');
+        if (currentId !== key) {
+          currentId = key;
+          loadFrame(url);
         }
       }
 
@@ -325,9 +327,9 @@
       }
 
       function route() {
-        var m = /^#\/([\w-]+)/.exec(location.hash);
+        var m = /^#\/([\w-]+)(\/admin)?/.exec(location.hash);
         var app = m && apps.filter(function (a) { return a.id === m[1]; })[0];
-        if (app) openApp(app); else closeApp();
+        if (app) openApp(app, !!m[2]); else closeApp();
       }
       window.addEventListener('hashchange', route);
 
